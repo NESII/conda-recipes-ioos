@@ -1,0 +1,13 @@
+sudo: required
+services: docker
+
+before_install:
+    - docker pull continuumio/miniconda
+    - docker run -id --name ubuntu continuumio/miniconda bash
+
+install:
+    - docker exec ubuntu conda create -n test-esmpy -c ioos esmpy
+
+script:
+    - docker exec ubuntu source activate test-esmpy
+    - docker exec ubuntu python -c "import ESMF; m = ESMF.Manager(); print(m.pet_count)"
