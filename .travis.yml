@@ -1,18 +1,18 @@
 sudo: required
 services: docker
+branches:
+  only:
+    - test-install-extras
 
 env:
-  - DIMAGE=continuumio/miniconda INSTALLS="apt-get update && apt-get install -y gfortran" CDIR=""
-  - DIMAGE=tswicegood/miniconda INSTALLS="yum update -y && yum install -y gcc-gfortran" CDIR=/opt/anaconda/bin/
+  - DIMAGE=bekozi/ntest-ubuntu
+  - DIMAGE=bekozi/nbuild-centos6
 
 before_install:
   - docker run -id --name test-runner $DIMAGE bash
-  - docker exec test-runner bash -c "$INSTALLS"
 
 install:
-  - docker exec test-runner bash -c "${CDIR}conda create -n test-esmpy -c ioos esmpy"
-  - docker exec test-runner bash -c "${CDIR}conda create -n test-ocgis -c ioos ocgis nose"
+  - docker exec test-runner bash -c "conda create -n test -c ioos ocgis nose esmpy"
 
 script:
-  - docker exec test-runner bash -c "source ${CDIR}activate test-esmpy && python -c \"import ESMF; m = ESMF.Manager(); print(m.pet_count)\""
-  - docker exec test-runner bash -c "source ${CDIR}activate test-ocgis && python -c \"from ocgis.test import run_simple; run_simple()\""
+  - docker exec test-runner bash -c "source activate test && python -c \"from ocgis.test import run_simple; run_simple()\""
